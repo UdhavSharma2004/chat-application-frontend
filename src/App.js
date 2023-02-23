@@ -1,23 +1,56 @@
-import logo from './logo.svg';
 import './App.css';
+import { useEffect, useState } from 'react';
 
-function App() {
+import io from 'socket.io-client';
+// import { nanoid } from 'nanoid';
+
+const URL = 'https://chat-application-backend-wh4w.onrender.com';
+
+const socket = io.connect(URL);
+
+const App = () => {
+  const [message, setMessage] = useState('');
+  const [chat, setChat] = useState([]);
+
+  const sendMessage = (e) => {
+    e.preventDefault();
+    
+    socket.emit('chat', { message });
+    
+    setMessage('');
+  }
+
+  useEffect(() => {
+    socket.on('chat', (payload) => {
+      setChat([...chat, payload]);
+    })
+  });
+
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <p>Chat Application</p>
+      <hr />
+      <div className="chat">
+        <div className="chat__messages">
+          {chat.map((payload, index) => {
+            return (
+              <p key={index}>{payload.message}</p>
+            )
+          })}
+        </div>
+      </div>
+      <form className='chat_input' onSubmit={sendMessage}>
+        <input type="text"
+          placeholder='Enter message'
+          name="chat"
+          className='message_input'
+          value={message}
+          autoComplete='off'
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button type='submit' className='message_button'>Send</button>
+      </form>
     </div>
   );
 }
